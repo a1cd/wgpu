@@ -1,249 +1,98 @@
-<img align="right" width="25%" src="logo.png">
+## Structure
 
-# wgpu
+For the simplest examples without using any helping code (see `framework.rs` here), check out:
 
-[![Matrix Space](https://img.shields.io/static/v1?label=Space&message=%23Wgpu&color=blue&logo=matrix)](https://matrix.to/#/#Wgpu:matrix.org)
-[![Dev Matrix  ](https://img.shields.io/static/v1?label=devs&message=%23wgpu&color=blueviolet&logo=matrix)](https://matrix.to/#/#wgpu:matrix.org)
-[![User Matrix ](https://img.shields.io/static/v1?label=users&message=%23wgpu-users&color=blueviolet&logo=matrix)](https://matrix.to/#/#wgpu-users:matrix.org)
-[![Build Status](https://github.com/gfx-rs/wgpu/workflows/CI/badge.svg)](https://github.com/gfx-rs/wgpu/actions)
-[![codecov.io](https://codecov.io/gh/gfx-rs/wgpu/branch/trunk/graph/badge.svg?token=84qJTesmeS)](https://codecov.io/gh/gfx-rs/wgpu)
+- `hello` for printing adapter information
+- `hello-triangle` for graphics and presentation
+- `hello-compute` for pure computing
 
-`wgpu` is a cross-platform, safe, pure-rust graphics API. It runs natively on Vulkan, Metal, D3D12, and OpenGL; and on top of WebGL2 and WebGPU on wasm.
+### Summary of examples
 
-The API is based on the [WebGPU standard](https://gpuweb.github.io/gpuweb/). It serves as the core of the WebGPU integration in Firefox and Deno.
+A summary of the basic examples as split along the graphics and compute "pathways" laid out roughly in order of building on each other. Those further indented, and thus more roughly dependent on more other examples, tend to be more complicated as well as those further down. It should be noted, though, that computing examples, even though they are mentioned further down (because rendering to a window is by far the most common use case), tend to be less complex as they require less surrounding context to create and manage a window to render to.
 
-## Repo Overview
+The rest of the examples are for demonstrating specific features that you can come back for later when you know what those features are.
 
-The repository hosts the following libraries:
+#### General
 
-- [![Crates.io](https://img.shields.io/crates/v/wgpu.svg?label=wgpu)](https://crates.io/crates/wgpu) [![docs.rs](https://docs.rs/wgpu/badge.svg)](https://docs.rs/wgpu/) - User facing Rust API.
-- [![Crates.io](https://img.shields.io/crates/v/wgpu-core.svg?label=wgpu-core)](https://crates.io/crates/wgpu-core) [![docs.rs](https://docs.rs/wgpu-core/badge.svg)](https://docs.rs/wgpu-core/) - Internal safe implementation.
-- [![Crates.io](https://img.shields.io/crates/v/wgpu-hal.svg?label=wgpu-hal)](https://crates.io/crates/wgpu-hal) [![docs.rs](https://docs.rs/wgpu-hal/badge.svg)](https://docs.rs/wgpu-hal/) - Internal unsafe GPU API abstraction layer.
-- [![Crates.io](https://img.shields.io/crates/v/wgpu-types.svg?label=wgpu-types)](https://crates.io/crates/wgpu-types) [![docs.rs](https://docs.rs/wgpu-types/badge.svg)](https://docs.rs/wgpu-types/) - Rust types shared between all crates.
-- [![Crates.io](https://img.shields.io/crates/v/naga.svg?label=naga)](https://crates.io/crates/naga) [![docs.rs](https://docs.rs/naga/badge.svg)](https://docs.rs/naga/) - Stand-alone shader translation library.
-- [![Crates.io](https://img.shields.io/crates/v/d3d12.svg?label=d3d12)](https://crates.io/crates/d3d12) [![docs.rs](https://docs.rs/d3d12/badge.svg)](https://docs.rs/d3d12/) - Collection of thin abstractions over d3d12.
-- [![Crates.io](https://img.shields.io/crates/v/deno_webgpu.svg?label=deno_webgpu)](https://crates.io/crates/deno_webgpu) - WebGPU implementation for the Deno JavaScript/TypeScript runtime
+- `hello` - Demonstrates the basics of the WGPU library by getting a default Adapter and debugging it to the screen
 
-The following binaries:
+#### Graphics
 
-- [![Crates.io](https://img.shields.io/crates/v/naga-cli.svg?label=naga-cli)](https://crates.io/crates/naga-cli) - Tool for translating shaders between different languages using `naga`.
-- [![Crates.io](https://img.shields.io/crates/v/wgpu-info.svg?label=wgpu-info)](https://crates.io/crates/wgpu-info) - Tool for getting information on GPUs in the system.
-- `cts_runner` - WebGPU Conformance Test Suite runner using `deno_webgpu`.
-- `player` - standalone application for replaying the API traces.
+- `hello-triangle` - Provides an example of a bare-bones WGPU workflow using the Winit crate that simply renders a red triangle on a green background.
+- `uniform-values` - Demonstrates the basics of enabling shaders and the GPU, in general, to access app state through uniform variables. `uniform-values` also serves as an example of rudimentary app building as the app stores state and takes window-captured keyboard events. The app displays the Mandelbrot Set in grayscale (similar to `storage-texture`) but allows the user to navigate and explore it using their arrow keys and scroll wheel.
+- `cube` - Introduces the user to slightly more advanced models. The example creates a set of triangles to form a cube on the CPU and then uses a vertex and index buffer to send the generated model to the GPU for usage in rendering. It also uses a texture generated on the CPU to shade the sides of the cube and a uniform variable to apply a transformation matrix to the cube in the shader.
+- `bunnymark` - Demonstrates many things, but chief among them is performing numerous draw calls with different bind groups in one render pass. The example also uses textures for the icon and uniform buffers to transfer both global and per-particle states.
+- `skybox` - Shows off too many concepts to list here. The name comes from game development where a "skybox" acts as a background for rendering, usually to add a sky texture for immersion, although they can also be used for backdrops to give the idea of a world beyond the game scene. This example does so much more than this, though, as it uses a car model loaded from a file and uses the user's mouse to rotate the car model in 3d. `skybox` also makes use of depth textures and similar app patterns to `uniform-values`.
+- `shadow` - Likely by far the most complex example (certainly the largest in lines of code) of the official WGPU examples. `shadow` demonstrates basic scene rendering with the main attraction being lighting and shadows (as the name implies). It is recommended that any user looking into lighting be very familiar with the basic concepts of not only rendering with WGPU but also the primary mathematical ideas of computer graphics.
+- `render-to-texture` - Renders to an image texture offscreen, demonstrating both off-screen rendering as well as how to add a sort of resolution-agnostic screenshot feature to an engine. This example either outputs an image file of your naming (pass command line arguments after specifying a `--` like `cargo run --bin render-to-texture -- "test.png"`) or adds an `img` element containing the image to the page in WASM.
 
-For an overview of all the components in the gfx-rs ecosystem, see [the big picture](./etc/big-picture.png).
+#### Compute
 
-## Getting Started
+- `hello-compute` - Demonstrates the basic workflow for getting arrays of numbers to the GPU, executing a shader on them, and getting the results back. The operation it performs is finding the Collatz value (how many iterations of the [Collatz equation](https://en.wikipedia.org/wiki/Collatz_conjecture) it takes for the number to either reach 1 or overflow) of a set of numbers and prints the results.
+- `repeated-compute` - Mostly for going into detail on subjects `hello-compute` did not. It, too, computes the Collatz conjecture, but this time, it automatically loads large arrays of randomly generated numbers, prints them, runs them, and prints the result. It does this cycle 10 times.
+- `hello-workgroups` - Teaches the user about the basics of compute workgroups; what they are and what they can do.
+- `hello-synchronization` - Teaches the user about synchronization in WGSL, the ability to force all invocations in a workgroup to synchronize with each other before continuing via a sort of barrier.
+- `storage-texture` - Demonstrates the use of storage textures as outputs to compute shaders. The example on the outside seems very similar to `render-to-texture` in that it outputs an image either to the file system or the web page, except displaying a grayscale render of the Mandelbrot Set. However, inside, the example dispatches a grid of compute workgroups, one for each pixel, which calculates the pixel value and stores it to the corresponding pixel of the output storage texture.
 
-### Rust
+#### Combined
 
-Rust examples can be found at [wgpu/examples](examples). You can run the examples on native with `cargo run --bin wgpu-examples <example>`. See the [list of examples](examples).
+- `boids` - Demonstrates how to combine compute and render workflows by performing a [boid](https://en.wikipedia.org/wiki/Boids) simulation and rendering the boids to the screen as little triangles.
 
-To run the examples on WebGPU on wasm, run `cargo xtask run-wasm --bin wgpu-examples`. Then connect to `http://localhost:8000` in your WebGPU-enabled browser, and you can choose an example to run.
+## Feature matrix
 
-To run the examples on WebGL on wasm, run `cargo xtask run-wasm --bin wgpu-examples --features webgl`. Then connect to `http://localhost:8000` in your WebGL-enabled browser, and you can choose an example to run.
+| Feature                      | boids  | bunnymark | conservative-raster | cube   | hello-synchronization | hello-workgroups | mipmap | msaa-line | render-to-texture | repeated-compute | shadow | skybox | stencil-triangles | storage-texture | texture-arrays | uniform-values | water  |
+| ---------------------------- | ------ | --------- | ------------------- | ------ | --------------------- | ---------------- | ------ | --------- | ----------------- | ---------------- | ------ | ------ | ----------------- | --------------- | -------------- | -------------- | ------ |
+| vertex attributes            | :star: |           |                     | :star: |                       |                  |        | :star:    |                   |                  | :star: | :star: |                   |                 | :star:         |                | :star: |
+| instancing                   | :star: |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| lines and points             |        |           | :star:              |        |                       |                  |        | :star:    |                   |                  |        |        |                   |                 |                |                |        |
+| dynamic buffer offsets       |        | :star:    |                     |        |                       |                  |        |           |                   |                  | :star: |        |                   |                 |                |                |        |
+| implicit layout              |        |           |                     |        |                       |                  | :star: |           |                   |                  |        |        |                   |                 |                |                |        |
+| sampled color textures       | :star: | :star:    | :star:              | :star: |                       |                  | :star: |           |                   |                  |        | :star: |                   |                 | :star:         |                | :star: |
+| storage textures             | :star: |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   | :star:          |                |                |        |
+| comparison samplers          |        |           |                     |        |                       |                  |        |           |                   |                  | :star: |        |                   |                 |                |                |        |
+| subresource views            |        |           |                     |        |                       |                  | :star: |           |                   |                  | :star: |        |                   |                 |                |                |        |
+| cubemaps                     |        |           |                     |        |                       |                  |        |           |                   |                  |        | :star: |                   |                 |                |                |        |
+| multisampling                |        |           |                     |        |                       |                  |        | :star:    |                   |                  |        |        |                   |                 |                |                |        |
+| off-screen rendering         |        |           | :star:              |        |                       |                  |        |           | :star:            |                  | :star: |        |                   |                 |                |                | :star: |
+| stencil testing              |        |           |                     |        |                       |                  |        |           |                   |                  |        |        | :star:            |                 |                |                |        |
+| depth testing                |        |           |                     |        |                       |                  |        |           |                   |                  | :star: | :star: |                   |                 |                |                | :star: |
+| depth biasing                |        |           |                     |        |                       |                  |        |           |                   |                  | :star: |        |                   |                 |                |                |        |
+| read-only depth              |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                | :star: |
+| blending                     |        | :star:    |                     | :star: |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                | :star: |
+| render bundles               |        |           |                     |        |                       |                  |        | :star:    |                   |                  |        |        |                   |                 |                |                | :star: |
+| uniform buffers              |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                | :star:         |        |
+| compute passes               | :star: |           |                     |        | :star:                | :star:           |        |           |                   | :star:           |        |        |                   | :star:          |                |                |        |
+| buffer mapping               |        |           |                     |        | :star:                | :star:           |        |           |                   | :star:           |        |        |                   | :star:          |                |                |        |
+| error scopes                 |        |           |                     | :star: |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| compute workgroups           |        |           |                     |        | :star:                | :star:           |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| compute synchronization      |        |           |                     |        | :star:                |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| _optional extensions_        |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 | :star:         |                |        |
+| - SPIR-V shaders             |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| - binding array              |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 | :star:         |                |        |
+| - push constants             |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| - depth clamping             |        |           |                     |        |                       |                  |        |           |                   |                  | :star: |        |                   |                 |                |                |        |
+| - compressed textures        |        |           |                     |        |                       |                  |        |           |                   |                  |        | :star: |                   |                 |                |                |        |
+| - polygon mode               |        |           |                     | :star: |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| - queries                    |        |           |                     |        |                       |                  | :star: |           |                   |                  |        |        |                   |                 |                |                |        |
+| - conservative rasterization |        |           | :star:              |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| _integrations_               |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| - staging belt               |        |           |                     |        |                       |                  |        |           |                   |                  |        | :star: |                   |                 |                |                |        |
+| - typed arena                |        |           |                     |        |                       |                  |        |           |                   |                  |        |        |                   |                 |                |                |        |
+| - obj loading                |        |           |                     |        |                       |                  |        |           |                   |                  |        | :star: |                   |                 |                |                |        |
 
-If you are looking for a wgpu tutorial, look at the following:
 
-- https://sotrh.github.io/learn-wgpu/
+## Additional notes
 
-### C/C++
+Note that the examples regarding computing build off of each other; repeated-compute extends hello-compute, hello-workgroups assumes you know the basic workflow of GPU computation, and hello-synchronization assumes you know what a workgroup is. Also, note that the computing examples cannot be downleveled to WebGL as WebGL does not allow storage textures. Running these in a browser will require that browser to support WebGPU.
 
-To use wgpu in C/C++, you need [wgpu-native](https://github.com/gfx-rs/wgpu-native).
+All the examples use [WGSL](https://gpuweb.github.io/gpuweb/wgsl.html) shaders unless specified otherwise.
 
-If you are looking for a wgpu C++ tutorial, look at the following:
+All framework-based examples render to the window and are reftested against the screenshot in the directory.
 
-- https://eliemichel.github.io/LearnWebGPU/
+## Hacking
 
-### Others
+You can record an API trace for any of the framework-based examples by starting them as:
 
-If you want to use wgpu in other languages, there are many bindings to wgpu-native from languages such as Python, D, Julia, Kotlin, and more. See [the list](https://github.com/gfx-rs/wgpu-native#bindings).
-
-## Community
-
-We have the Matrix space [![Matrix Space](https://img.shields.io/static/v1?label=Space&message=%23Wgpu&color=blue&logo=matrix)](https://matrix.to/#/#Wgpu:matrix.org) with a few different rooms that form the wgpu community:
-
-- [![Wgpu Matrix](https://img.shields.io/static/v1?label=wgpu-devs&message=%23wgpu&color=blueviolet&logo=matrix)](https://matrix.to/#/#wgpu:matrix.org) - discussion of the wgpu's development.
-- [![Naga Matrix](https://img.shields.io/static/v1?label=naga-devs&message=%23naga&color=blueviolet&logo=matrix)](https://matrix.to/#/#naga:matrix.org) - discussion of the naga's development.
-- [![User Matrix](https://img.shields.io/static/v1?label=wgpu-users&message=%23wgpu-users&color=blueviolet&logo=matrix)](https://matrix.to/#/#wgpu-users:matrix.org) - discussion of using the library and the surrounding ecosystem.
-- [![Random Matrix](https://img.shields.io/static/v1?label=random&message=%23wgpu-random&color=blueviolet&logo=matrix)](https://matrix.to/#/#wgpu-random:matrix.org) - discussion of everything else.
-
-## Wiki
-
-We have a [wiki](https://github.com/gfx-rs/wgpu/wiki) that serves as a knowledge base.
-
-## Supported Platforms
-
-| API    | Windows            | Linux/Android      | macOS/iOS          | Web (wasm)         |
-| ------ | ------------------ | ------------------ | ------------------ | ------------------ |
-| Vulkan | :white_check_mark: | :white_check_mark: | :volcano:          |                    |
-| Metal  |                    |                    | :white_check_mark: |                    |
-| DX12   | :white_check_mark: |                    |                    |                    |
-| OpenGL | :ok: (GL 3.3+)     | :ok: (GL ES 3.0+)  | :triangular_ruler: | :ok: (WebGL2)      |
-| WebGPU |                    |                    |                    | :white_check_mark: |
-
-:white_check_mark: = First Class Support  
-:ok: = Downlevel/Best Effort Support  
-:triangular_ruler: = Requires the [ANGLE](#angle) translation layer (GL ES 3.0 only)  
-:volcano: = Requires the [MoltenVK](https://vulkan.lunarg.com/sdk/home#mac) translation layer  
-:hammer_and_wrench: = Unsupported, though open to contributions  
-
-### Shader Support
-
-wgpu supports shaders in [WGSL](https://gpuweb.github.io/gpuweb/wgsl/), SPIR-V, and GLSL.
-Both [HLSL](https://github.com/Microsoft/DirectXShaderCompiler) and [GLSL](https://github.com/KhronosGroup/glslang)
-have compilers to target SPIR-V. All of these shader languages can be used with any backend as we handle all of the conversions. Additionally, support for these shader inputs is not going away.
-
-While WebGPU does not support any shading language other than WGSL, we will automatically convert your
-non-WGSL shaders if you're running on WebGPU.
-
-WGSL is always supported by default, but GLSL and SPIR-V need features enabled to compile in support.
-
-Note that the WGSL specification is still under development,
-so the [draft specification][wgsl spec] does not exactly describe what `wgpu` supports.
-See [below](#tracking-the-webgpu-and-wgsl-draft-specifications) for details.
-
-To enable SPIR-V shaders, enable the `spirv` feature of wgpu.
-To enable GLSL shaders, enable the `glsl` feature of wgpu.
-
-### Angle
-
-[Angle](http://angleproject.org) is a translation layer from GLES to other backends developed by Google.
-We support running our GLES3 backend over it in order to reach platforms DX11 support, which aren't accessible otherwise.
-In order to run with Angle, the "angle" feature has to be enabled, and Angle libraries placed in a location visible to the application.
-These binaries can be downloaded from [gfbuild-angle](https://github.com/DileSoft/gfbuild-angle) artifacts, [manual compilation](https://github.com/google/angle/blob/main/doc/DevSetup.md) may be required on Macs with Apple silicon.
-
-On Windows, you generally need to copy them into the working directory, in the same directory as the executable, or somewhere in your path.
-On Linux, you can point to them using `LD_LIBRARY_PATH` environment.
-
-### MSRV policy
-
-Due to complex dependants, we have two MSRV policies:
- - `d3d12`, `naga`, `wgpu-core`, `wgpu-hal`, and `wgpu-types`'s MSRV is **1.70**.
- - The rest of the workspace has an MSRV of **1.71**.
-
-It is enforced on CI (in "/.github/workflows/ci.yml") with the `CORE_MSRV` and `REPO_MSRV` variables.
-This version can only be upgraded in breaking releases, though we release a breaking version every three months.
-
-The `naga`, `wgpu-core`, `wgpu-hal`, and `wgpu-types` crates should never
-require an MSRV ahead of Firefox's MSRV for nightly builds, as
-determined by the value of `MINIMUM_RUST_VERSION` in
-[`python/mozboot/mozboot/util.py`][util].
-
-[util]: https://searchfox.org/mozilla-central/source/python/mozboot/mozboot/util.py
-
-## Environment Variables
-
-All testing and example infrastructure share the same set of environment variables that determine which Backend/GPU it will run on.
-
-- `WGPU_ADAPTER_NAME` with a substring of the name of the adapter you want to use (ex. `1080` will match `NVIDIA GeForce 1080ti`).
-- `WGPU_BACKEND` with a comma-separated list of the backends you want to use (`vulkan`, `metal`, `dx12`, or `gl`).
-- `WGPU_POWER_PREF` with the power preference to choose when a specific adapter name isn't specified (`high`, `low` or `none`)
-- `WGPU_DX12_COMPILER` with the DX12 shader compiler you wish to use (`dxc` or `fxc`, note that `dxc` requires `dxil.dll` and `dxcompiler.dll` to be in the working directory otherwise it will fall back to `fxc`)
-- `WGPU_GLES_MINOR_VERSION` with the minor OpenGL ES 3 version number to request (`0`, `1`, `2` or `automatic`).
-- `WGPU_ALLOW_UNDERLYING_NONCOMPLIANT_ADAPTER` with a boolean whether non-compliant drivers are enumerated (`0` for false, `1` for true).
-
-When running the CTS, use the variables `DENO_WEBGPU_ADAPTER_NAME`, `DENO_WEBGPU_BACKEND`, `DENO_WEBGPU_POWER_PREFERENCE`.
-
-## Testing
-
-We have multiple methods of testing, each of which tests different qualities about wgpu. We automatically run our tests on CI. The current state of CI testing:
-
-| Platform/Backend | Tests              | Notes                 |
-| ---------------- | ------------------ | --------------------- |
-| Windows/DX12     | :heavy_check_mark: | using WARP            |
-| Windows/OpenGL   | :heavy_check_mark: | using llvmpipe        |
-| MacOS/Metal      | :heavy_check_mark: | using hardware runner |
-| Linux/Vulkan     | :heavy_check_mark: | using lavapipe        |
-| Linux/OpenGL ES  | :heavy_check_mark: | using llvmpipe        |
-| Chrome/WebGL     | :heavy_check_mark: | using swiftshader     |
-| Chrome/WebGPU    | :x:                | not set up            |
-
-### Core Test Infrastructure
-
-We use a tool called [`cargo nextest`](https://github.com/nextest-rs/nextest) to run our tests.
-To install it, run `cargo install cargo-nextest`.
-
-To run the test suite:
-
+```sh
+mkdir -p trace && WGPU_TRACE=trace cargo run --features trace --bin wgpu-examples <example-name>
 ```
-cargo xtask test
-```
-
-To run the test suite on WebGL (currently incomplete):
-
-```
-cd wgpu
-wasm-pack test --headless --chrome --no-default-features --features webgl --workspace
-```
-
-This will automatically run the tests using a packaged browser. Remove `--headless` to run the tests with whatever browser you wish at `http://localhost:8000`.
-
-If you are a user and want a way to help contribute to wgpu, we always need more help writing test cases.
-
-### WebGPU Conformance Test Suite
-
-WebGPU includes a Conformance Test Suite to validate that implementations are working correctly. We can run this CTS against wgpu.
-
-To run the CTS, first, you need to check it out:
-
-```
-git clone https://github.com/gpuweb/cts.git
-cd cts
-# works in bash and powershell
-git checkout $(cat ../cts_runner/revision.txt)
-```
-
-To run a given set of tests:
-
-```
-# Must be inside the `cts` folder we just checked out, else this will fail
-cargo run --manifest-path ../Cargo.toml --bin cts_runner -- ./tools/run_deno --verbose "<test string>"
-```
-
-To find the full list of tests, go to the [online cts viewer](https://gpuweb.github.io/cts/standalone/?runnow=0&worker=0&debug=0&q=webgpu:*).
-
-The list of currently enabled CTS tests can be found [here](./cts_runner/test.lst).
-
-## Tracking the WebGPU and WGSL draft specifications
-
-The `wgpu` crate is meant to be an idiomatic Rust translation of the [WebGPU API][webgpu spec].
-That specification, along with its shading language, [WGSL][wgsl spec],
-are both still in the "Working Draft" phase,
-and while the general outlines are stable,
-details change frequently.
-Until the specification is stabilized, the `wgpu` crate and the version of WGSL it implements
-will likely differ from what is specified,
-as the implementation catches up.
-
-Exactly which WGSL features `wgpu` supports depends on how you are using it:
-
-- When running as native code, `wgpu` uses the [Naga][naga] crate
-  to translate WGSL code into the shading language of your platform's native GPU API.
-  Naga has [a milestone][naga wgsl milestone]
-  for catching up to the WGSL specification,
-  but in general, there is no up-to-date summary
-  of the differences between Naga and the WGSL spec.
-
-- When running in a web browser (by compilation to WebAssembly)
-  without the `"webgl"` feature enabled,
-  `wgpu` relies on the browser's own WebGPU implementation.
-  WGSL shaders are simply passed through to the browser,
-  so that determines which WGSL features you can use.
-
-- When running in a web browser with `wgpu`'s `"webgl"` feature enabled,
-  `wgpu` uses Naga to translate WGSL programs into GLSL.
-  This uses the same version of Naga as if you were running `wgpu` as native code.
-
-[webgpu spec]: https://www.w3.org/TR/webgpu/
-[wgsl spec]: https://gpuweb.github.io/gpuweb/wgsl/
-[naga]: https://github.com/gfx-rs/naga/
-[naga wgsl milestone]: https://github.com/gfx-rs/naga/milestone/4
-
-## Coordinate Systems
-
-wgpu uses the coordinate systems of D3D and Metal:
-
-| Render                                              | Texture                                               |
-| --------------------------------------------------- | ----------------------------------------------------- |
-| ![render_coordinates](./etc/render_coordinates.png) | ![texture_coordinates](./etc/texture_coordinates.png) |
